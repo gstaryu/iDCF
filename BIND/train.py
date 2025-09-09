@@ -3,17 +3,19 @@
 @Project: BIND
 @File   : train.py
 @IDE    : PyCharm
-@Author : staryu
+@Author : hjguo
 @Date   : 2025/7/9 11:37
-@Doc    : 训练和测试代码
+@Doc    : Train the BIND model
 """
 import torch
 import torch.nn as nn
+from torch.nn import functional as F
 import pandas as pd
 from tqdm import tqdm
 from .model import BIND
 
 from torch.utils.data import DataLoader
+
 
 class Dataset:
     def __init__(self, data, label):
@@ -28,6 +30,17 @@ class Dataset:
 
 
 def train(train_data, batch_size, lr, epochs, device, knowledge=None):
+    """
+    Train the BIND model.
+
+    :param train_data: Training data in AnnData format.
+    :param batch_size: Batch size for training.
+    :param lr: Learning rate
+    :param epochs: Number of training epochs.
+    :param device: Device to run the training on.
+    :param knowledge: Prior knowledge matrix (optional).
+    :return: Trained model and training loss history.
+    """
     X_tensor, Y_tensor = torch.from_numpy(train_data.X).float(), torch.from_numpy(train_data.obs.to_numpy()).float()
     X_tensor, Y_tensor = X_tensor.to(device), Y_tensor.to(device)
     train_loader = DataLoader(Dataset(X_tensor, Y_tensor), batch_size=batch_size, shuffle=True)
@@ -44,7 +57,7 @@ def train(train_data, batch_size, lr, epochs, device, knowledge=None):
         total_loss = 0
         for step, (batch_x, batch_y) in enumerate(train_loader):
             optimizer.zero_grad()
-            frac_pred = model(batch_x, is_knowledge=is_knowledge)
+            frac_pred = F.softmax(model(batch_x, is_knowledge=is_knowledge), dim=1)
             batch_loss = nn.MSELoss()(frac_pred, batch_y) + nn.L1Loss()(frac_pred, batch_y)
             batch_loss.backward()
             optimizer.step()
@@ -54,11 +67,21 @@ def train(train_data, batch_size, lr, epochs, device, knowledge=None):
         pbar.set_postfix(Loss=f'{avg_loss:.4f}')
     return model, loss
 
+
 def prediction(model, test_data, device, knowledge=None):
+    """
+    Predict cell type fractions using the trained BIND model.
+
+    :param model: Trained BIND model.
+    :param test_data: Test data in AnnData format.
+    :param device: Device to run the prediction on.
+    :param knowledge:
+    :return: Predicted cell type fractions as a DataFrame.
+    """
     model.eval()
     is_knowledge = True if knowledge is not None else False
     X_tensor = torch.from_numpy(test_data.X).float().to(device)
     with torch.no_grad():
-        frac_pred = model(X_tensor, is_knowledge=is_knowledge).cpu().numpy()
+        frac_pred = F.softmax(model(X_tensor, is_knowledge=is_knowledge), dim=1).cpu().numpy()
     test_pred = pd.DataFrame(frac_pred, index=test_data.obs_names, columns=test_data.uns['cell_types'])
     return test_pred

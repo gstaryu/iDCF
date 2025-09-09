@@ -3,9 +3,9 @@
 @Project: BIND
 @File   : utils.py
 @IDE    : PyCharm
-@Author : staryu
+@Author : hjguo
 @Date   : 2025/7/9 11:37
-@Doc    : 包括loss, data_load, 转化函数等
+@Doc    : Data processing and knowledge base loading code
 """
 import os
 import pandas as pd
@@ -21,6 +21,12 @@ warnings.filterwarnings("ignore")
 
 
 def load_data(data_name=None):
+    """
+    Load training and testing data based on the specified dataset name.
+
+    :param data_name: Name of the dataset to be loaded.
+    :return: Training and testing data in AnnData format.
+    """
     if data_name == 'brain_human' or data_name == 'brain_human_541':
         data = sc.read_h5ad('./data/simu_data/PFC_norm_count_my_500cell_simu_8k.h5ad')
     elif data_name == 'HNSC':
@@ -38,11 +44,6 @@ def load_data(data_name=None):
         # data = sc.read_h5ad('./data/simu_data/new_data8k_norm_count_my_500cell_simu.h5ad')
         data.obs['Unknown'] = data.obs['Unknown'] + data.obs['Dendritic']
         data.obs.drop('Dendritic', axis=1, inplace=True)
-        # 转换为tpm
-        # data_df_tpm = count2tpm(data.to_df().T, annotation_file_path='./data/gencode.gene.info.v22.tsv')
-        # data = ad.AnnData(X=data_df_tpm.values, obs=data.obs, var=pd.DataFrame(index=data_df_tpm.columns))
-        # 转换为CPM
-        # sc.pp.normalize_total(data, target_sum=1e6)
         sorted_index = data.var_names.sort_values()
         data = data[:, sorted_index]
     data.uns = {'cell_types': list(data.obs.columns)}
@@ -62,22 +63,18 @@ def load_data(data_name=None):
     else:
         test_x = pd.read_csv('./data/Real bulk/' + test_name + '.txt', sep='\t', index_col=0).T
 
-    # # 测试集CPM标准化
-    # ad_test_x = ad.AnnData(X=test_x.values, var=pd.DataFrame(index=test_x.columns.tolist()))
-    # sc.pp.normalize_total(ad_test_x, target_sum=1e6)
-    # test_x = pd.DataFrame(ad_test_x.X, index=test_x.index.tolist(), columns=test_x.columns.tolist())
-
     print(f'Original train_x shape: {train_x.shape}, test_x shape: {test_x.shape}')
 
     print('Cutting variance...')
-    # 删除全0基因
-    train_x = train_x.loc[:, (train_x != 0).any(axis=0)]  # 删除全0基因
-    test_x = test_x.loc[:, (test_x != 0).any(axis=0)]  # 删除全0基因
+    # Remove all-zero genes
+    train_x = train_x.loc[:, (train_x != 0).any(axis=0)]
+    test_x = test_x.loc[:, (test_x != 0).any(axis=0)]
     # variance_threshold = 0.99999
     variance_threshold = 0.99
     var_cutoff = train_x.var(axis=0).sort_values(ascending=False)[
-        int(train_x.shape[1] * variance_threshold)]  # 计算每个基因的方差，从大到小排序，找到排名在前variance_threshold的基因
-    train_x = train_x.loc[:, train_x.var(axis=0) > var_cutoff]  # 这里是把方差小于var_cutoff的基因去掉
+        int(train_x.shape[
+                1] * variance_threshold)]  # Calculate variance for each gene, sort from high to low, find genes ranked in the top variance_threshold
+    train_x = train_x.loc[:, train_x.var(axis=0) > var_cutoff]  # Remove genes with variance less than var_cutoff
     var_cutoff = test_x.var(axis=0).sort_values(ascending=False)[int(test_x.shape[1] * variance_threshold)]
     test_x = test_x.loc[:, test_x.var(axis=0) > var_cutoff]
 
@@ -104,7 +101,6 @@ def load_data(data_name=None):
     test_data.obs_names = test_x.index
     test_data.uns = {'cell_types': list(data.obs.columns)}
 
-    # 转成AnnData
     train_data = ad.AnnData(X=train_x.values, obs=train_data.obs)
     train_data.var_names = train_x.columns
     train_data.uns = data.uns
@@ -113,6 +109,13 @@ def load_data(data_name=None):
 
 
 def load_data_from_path(train_path, test_path):
+    """
+    Load training and testing data from specified file paths.
+
+    :param train_path: Path to the training data file (.h5ad format).
+    :param test_path: Path to the testing data file (.h5ad, .csv, or .txt format).
+    :return: Training and testing data in AnnData format.
+    """
     if train_path.endswith('.h5ad'):
         data = sc.read_h5ad(train_path)
     else:
@@ -137,14 +140,15 @@ def load_data_from_path(train_path, test_path):
         raise ValueError('Unsupported test data format. Please provide .h5ad, .csv, or .txt file.')
 
     print('Cutting variance...')
-    # 删除全0基因
-    train_x = train_x.loc[:, (train_x != 0).any(axis=0)]  # 删除全0基因
-    test_x = test_x.loc[:, (test_x != 0).any(axis=0)]  # 删除全0基因
+    # Remove all-zero genes
+    train_x = train_x.loc[:, (train_x != 0).any(axis=0)]
+    test_x = test_x.loc[:, (test_x != 0).any(axis=0)]
     # variance_threshold = 0.99999
     variance_threshold = 0.99
     var_cutoff = train_x.var(axis=0).sort_values(ascending=False)[
-        int(train_x.shape[1] * variance_threshold)]  # 计算每个基因的方差，从大到小排序，找到排名在前variance_threshold的基因
-    train_x = train_x.loc[:, train_x.var(axis=0) > var_cutoff]  # 这里是把方差小于var_cutoff的基因去掉
+        int(train_x.shape[
+                1] * variance_threshold)]  # Calculate variance for each gene, sort from high to low, find genes ranked in the top variance_threshold
+    train_x = train_x.loc[:, train_x.var(axis=0) > var_cutoff]  # Remove genes with variance less than var_cutoff
     var_cutoff = test_x.var(axis=0).sort_values(ascending=False)[int(test_x.shape[1] * variance_threshold)]
     test_x = test_x.loc[:, test_x.var(axis=0) > var_cutoff]
 
@@ -165,7 +169,6 @@ def load_data_from_path(train_path, test_path):
     test_data = ad.AnnData(X=test_x.values)
     test_data.var_names = test_x.columns
 
-    # 转成AnnData
     train_data = ad.AnnData(X=train_x.values, obs=train_data.obs)
     train_data.var_names = train_x.columns
     train_data.uns = data.uns
@@ -175,55 +178,50 @@ def load_data_from_path(train_path, test_path):
 
 def get_ppi(ppi_file_path, gene_list, one_hot=True):
     """
-    从PPI数据文件中提取指定基因列表的蛋白质互作网络，优化版本
+    Extract the protein-protein interaction (PPI) network for a specified list of genes from a PPI data file.
 
-    参数:
-    gene_list (list): 基因名称列表
-
-    返回:
-    numpy.ndarray: 基因间PPI互作矩阵
+    :param ppi_file_path: PPI data file path
+    :param gene_list: List of gene names
+    :param one_hot: If True, use one-hot encoding for interactions; if False, use combined_score/1000
+    :return:numpy ndarray representing the PPI interaction matrix between genes
     """
-    # 将基因列表转换为集合以加速查找
     gene_set = set(gene_list)
     gene_to_index = {gene: idx for idx, gene in enumerate(gene_list)}
 
-    # 创建初始矩阵
+    # Create an identity matrix as the initial PPI matrix
     n = len(gene_list)
     ppi_matrix = np.eye(n, dtype=np.float32)
 
-    # 使用分块读取来处理大文件
-    chunk_size = 1000000  # 每次读取100万行
+    # Define chunk size for reading large files
+    chunk_size = 1000000
 
-    # 首先计算总行数
+    # Calculate total number of lines for progress tracking
     total_lines = sum(1 for _ in open(ppi_file_path, 'r'))
 
-    # 使用dtype和usecols来只读取需要的列
     dtype_dict = {
         'protein1': str,
         'protein2': str,
         'combined_score': np.float32
     }
 
-    # 使用迭代器分块读取文件，进度条基于总行数
+    # Read the PPI file in chunks and filter for relevant genes
     for chunk in pd.read_csv(ppi_file_path,
                              sep='\t',
                              chunksize=chunk_size,
                              dtype=dtype_dict,
                              usecols=['protein1', 'protein2', 'combined_score']):
 
-        # 使用向量化操作进行基因筛选
+        # Use vectorized operations for gene filtering
         mask = (chunk['protein1'].isin(gene_set)) & (chunk['protein2'].isin(gene_set))
         filtered_chunk = chunk[mask]
 
-        # 批量更新矩阵
         if not filtered_chunk.empty:
             idx1 = [gene_to_index[p] for p in filtered_chunk['protein1']]
             idx2 = [gene_to_index[p] for p in filtered_chunk['protein2']]
 
-            # 批量赋值
             if one_hot:
                 ppi_matrix[idx1, idx2] = 1
-                ppi_matrix[idx2, idx1] = 1  # 确保矩阵对称
+                ppi_matrix[idx2, idx1] = 1  # Ensure symmetry
             else:
                 ppi_matrix[idx1, idx2] = filtered_chunk['combined_score'].values / 1000
                 ppi_matrix[idx2, idx1] = filtered_chunk['combined_score'].values / 1000
@@ -238,22 +236,18 @@ def read_gene_set(gene_set_file_path: Union[str, List[str]],
                   max_n_genes: int = 300,
                   max_overlap_ratio: float = 1.0) -> pd.DataFrame:
     """
-    读取基因集合文件(GMT格式)并创建基因-通路矩阵
+    Read gene set files (GMT format) and create a gene-pathway matrix.
 
-    参数:
-    gene_set_file_path: str或str列表，GMT文件路径
-    min_n_genes: int，最小基因数量
-    max_n_genes: int，最大基因数量
-    max_overlap_ratio: float，最大重叠比例
-
-    返回:
-    pandas.DataFrame: 基因-通路矩阵，行为基因，列为通路，值为0或1
+    :param gene_set_file_path: str or list of str, path(s) to GMT file(s)
+    :param min_n_genes: int, minimum number of genes
+    :param max_n_genes: int, maximum number of genes
+    :param max_overlap_ratio: float, maximum overlap ratio
+    :return pandas.DataFrame: gene-pathway matrix with genes as rows, pathways as columns, and values as 0 or 1
     """
-    # 确保file_path是列表
     if isinstance(gene_set_file_path, str):
         gene_set_file_path = [gene_set_file_path]
 
-    # 读取所有基因集
+    # Read gene set files
     gs2genes = {}
     all_genes = set()
 
@@ -265,42 +259,38 @@ def read_gene_set(gene_set_file_path: Union[str, List[str]],
                 line = line.strip()
                 if line:
                     parts = line.split()
-                    if len(parts) < 3:  # 确保至少有通路名称、描述和一个基因
+                    if len(parts) < 3:  # Ensure there are at least 3 columns
                         continue
 
-                    gs = parts[0]  # 通路名称
-                    genes = parts[2:]  # 从第三列开始都是基因
-
-                    # 应用基因数量上限
-                    # if len(genes) > max_n_genes:
-                    #     genes = genes[:max_n_genes]
+                    gs = parts[0]  # Pathway name
+                    genes = parts[2:]  # From the third column onwards are gene names
 
                     gs2genes[gs] = genes
                     all_genes.update(genes)
 
-    # 过滤基因集（修复版本）
+    # Filter gene sets based on criteria
     filtered_gs2genes = {}
 
-    # 预处理：构建基因到通路的反向索引
+    # Create a mapping from gene to pathways for overlap calculation
     gene_to_pathways = {}
     for gs, genes in gs2genes.items():
-        for gene in genes:  # 去重
+        for gene in genes:
             if gene not in gene_to_pathways:
                 gene_to_pathways[gene] = set()
             gene_to_pathways[gene].add(gs)
 
-    # 主逻辑
+    # Filter gene sets
     for gs, genes in gs2genes.items():
         gene_count = len(genes)
-        genes_set = set(genes)  # 去重后的基因集合
+        genes_set = set(genes)
 
-        # 条件1: 基因数范围
+        # Condition 1: Gene count within specified range
         condition1 = min_n_genes <= gene_count <= max_n_genes
 
-        # 条件2: 大通路且低重叠率
+        # Condition 2: Gene count exceeds max_n_genes and overlap ratio is below threshold
         condition2 = False
         if gene_count > max_n_genes:
-            # 正确计算重叠率
+            # Calculate overlap ratio
             overlap_count = 0
             for gene in genes_set:
                 if len(gene_to_pathways.get(gene, set()) - {gs}) > 0:
@@ -308,18 +298,16 @@ def read_gene_set(gene_set_file_path: Union[str, List[str]],
             overlap_ratio = overlap_count / gene_count
             condition2 = overlap_ratio < max_overlap_ratio
 
-        # 保留条件
         if condition1 or condition2:
             filtered_gs2genes[gs] = genes
 
-    # 创建基因-通路矩阵
+    # Create gene-pathway matrix
     gene_set_df = pd.DataFrame(0, index=list(all_genes), columns=list(filtered_gs2genes.keys()))
 
     for gs, genes in filtered_gs2genes.items():
-        # 使用loc为特定基因和通路设置值为1
         gene_set_df.loc[genes, gs] = 1
 
-    # 将行和为0的行删除
+    # Remove genes that are not in any pathway
     gene_set_df = gene_set_df.loc[gene_set_df.sum(axis=1) > 0]
 
     return gene_set_df
@@ -327,6 +315,8 @@ def read_gene_set(gene_set_file_path: Union[str, List[str]],
 
 def get_pathway(gene_list, pathway_mask: pd.DataFrame):
     """
+    Get the pathway mask for the specified gene list.
+
     :param gene_list: input gene list
     :param pathway_mask: pathway mask
     :return: pathway mask with genes in gene_list
@@ -346,6 +336,14 @@ def get_pathway(gene_list, pathway_mask: pd.DataFrame):
 
 
 def load_knowledge(gene_list, is_ppi=True, is_pathway=True):
+    """
+    Load biological knowledge (PPI and/or pathway) for the specified gene list.
+
+    :param gene_list: input gene list
+    :param is_ppi: whether to load PPI data
+    :param is_pathway: whether to load pathway data
+    :return: knowledge matrix and knowledge names
+    """
     if is_ppi:
         ppi_file_path = './data/knowledge/PPI_data_min700.txt'
         ppi = get_ppi(ppi_file_path=ppi_file_path, gene_list=gene_list, one_hot=False)
@@ -367,5 +365,6 @@ def load_knowledge(gene_list, is_ppi=True, is_pathway=True):
         knowledge = pathways
     else:
         raise ValueError("At least one of ppi or pathway must be True.")
+    knowledge_names = gene_list + gene_set_df.columns.to_list()
 
-    return knowledge
+    return knowledge, knowledge_names

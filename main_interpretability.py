@@ -1,11 +1,11 @@
 # -*- coding: UTF-8 -*-
 """
 @Project: BIND
-@File   : main.py.py
+@File   : main.py
 @IDE    : PyCharm
-@Author : staryu
+@Author : hjguo
 @Date   : 2025/7/9 11:35
-@Doc    : 
+@Doc    : Main function. Add model interpretability analysis
 """
 import os
 import torch
@@ -21,7 +21,17 @@ from BIND.shap_utils import (
     explain_knowledge_features
 )
 
+
 def main(data_name=None, run_epochs=3, is_knowledge=True, interpretability=False):
+    """
+    Main function to train and predict using the BIND model, with optional interpretability analysis.
+
+    :param data_name: Name of the dataset to be used.
+    :param run_epochs: Number of times to run the training and prediction process.
+    :param is_knowledge: Boolean indicating whether to incorporate prior knowledge into the model.
+    :param interpretability: Boolean indicating whether to perform interpretability analysis using SHAP.
+    :return: None
+    """
     print(f'Data_name: {data_name}, is_knowledge: {is_knowledge}')
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     params = {'batch_size': 64, 'lr': 0.0001, 'epochs': 128}
@@ -33,31 +43,30 @@ def main(data_name=None, run_epochs=3, is_knowledge=True, interpretability=False
 
     gene_list = test_x.var_names.tolist()
     if is_knowledge:
-        knowledge = load_knowledge(gene_list)
+        knowledge, knowledge_names = load_knowledge(gene_list)
 
     pred_list = []
     for i in range(run_epochs):
         print(f"------Run epochs {i}------")
-        model, loss = train(train_data=train_data, batch_size=params['batch_size'], lr=params['lr'], epochs=params['epochs'], device=device,
+        model, loss = train(train_data=train_data, batch_size=params['batch_size'], lr=params['lr'],
+                            epochs=params['epochs'], device=device,
                             knowledge=knowledge if is_knowledge else None)
         pred = prediction(model=model, test_data=test_x, device=device,
                           knowledge=knowledge if is_knowledge else None)
-        pred.to_csv(os.path.join(save_path, f"{data_name}_pred_{i}.txt"), sep='\t')
+        # pred.to_csv(os.path.join(save_path, f"{data_name}_pred_{i}.txt"), sep='\t')
         pred_list.append(pred)
     final_pred = pd.concat(pred_list)
     final_pred = final_pred.groupby(level=0, sort=False).mean()
-    final_pred.to_csv(os.path.join(save_path, f"{data_name}_pred.txt"), sep='\t')
+    # final_pred.to_csv(os.path.join(save_path, f"{data_name}_pred.txt"), sep='\t')
 
     if interpretability:
-        interpretability_path = os.path.join(save_path, f'interpretability/{data_name}')
+        print("------Interpretability------")
+        interpretability_path = os.path.join(save_path, f'interpretability/{data_name}/')
+        if not os.path.exists(interpretability_path):
+            os.makedirs(interpretability_path)
         idx = random.sample(range(train_data.shape[0]), 1000)
         X_tensor = torch.tensor(train_data.X[idx], dtype=torch.float32)
-        gene_names = gene_list  # 输入基因名
-
-        if is_knowledge:
-            knowledge_names = knowledge.shape
-        else:
-            knowledge_names = []
+        gene_names = gene_list
 
         with open(os.path.join(interpretability_path, "gene_names.txt"), "w") as f:
             for name in gene_names:
@@ -67,30 +76,17 @@ def main(data_name=None, run_epochs=3, is_knowledge=True, interpretability=False
             for name in knowledge_names:
                 f.write(f"{name}\n")
 
-        # 保存X_tensor为.npy文件
+        # Save the input tensor
         np.save(os.path.join(interpretability_path, "X_tensor.npy"), X_tensor.cpu().numpy())
 
-        # === 运行 SHAP 分析 ===
-        explain_expression_genes(model, X_tensor, gene_names, interpretability_path)
+        # === Run SHAP analysis ===
+        explain_expression_genes(model, X_tensor, gene_names, test_x.uns['cell_types'], interpretability_path)
 
         if is_knowledge:
-            explain_knowledge_genes(model, X_tensor, gene_names, interpretability_path)
+            explain_knowledge_genes(model, X_tensor, gene_names, test_x.uns['cell_types'], interpretability_path)
             # explain_branch_contributions(model, X_tensor, interpretability_path)
             explain_knowledge_features(model, X_tensor, knowledge_names, interpretability_path)
 
 
 if __name__ == "__main__":
-    main(data_name='monaco_pbmc', run_epochs=3, is_knowledge=True)
-    # main(data_name='sdy67', run_epochs=3, is_knowledge=True)
-    # main(data_name='microarray', run_epochs=3, is_knowledge=True)
-    # main(data_name='brain_human', run_epochs=3, is_knowledge=True)
-    # main(data_name='GSE107572', run_epochs=3, is_knowledge=True)
-    # main(data_name='GSE120502', run_epochs=3, is_knowledge=True)
-    # main(data_name='monaco2', run_epochs=3, is_knowledge=True)
-    # main(data_name='sdy67_250', run_epochs=3, is_knowledge=True)
-    # main(data_name='GSE193141', run_epochs=3, is_knowledge=True)
-    # # main(data_name='HNSC', run_epochs=3, is_knowledge=True)
-    # main(data_name='Islet', run_epochs=3, is_knowledge=True)
-    # main(data_name='Pancreas', run_epochs=3, is_knowledge=True)
-    # main(data_name='CRC-sEV', run_epochs=3, is_knowledge=True)
-    # main(data_name='HGSC', run_epochs=3, is_knowledge=True)
+    main(data_name='monaco_pbmc', run_epochs=1, is_knowledge=True, interpretability=True)

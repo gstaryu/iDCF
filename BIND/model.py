@@ -1,13 +1,12 @@
 # -*- coding: UTF-8 -*-
 """
 @Project: BIND
-@File   : model.py.py
+@File   : model.py
 @IDE    : PyCharm
-@Author : staryu
+@Author : hjguo
 @Date   : 2025/7/9 11:36
-@Doc    : BIND模型代码，CustomizedLinear by: https://github.com/uchida-takumi/CustomizedLinear/tree/master
+@Doc    : BIND model code, CustomizedLinear comes from:: https://github.com/uchida-takumi/CustomizedLinear/tree/master
 """
-from torch.nn import functional as F
 import torch
 import torch.nn as nn
 import math
@@ -127,6 +126,13 @@ class CustomizedLinear(nn.Module):
 
 class BIND(nn.Module):
     def __init__(self, gene_num, output_dim, knowledge=None):
+        """
+        BIND model
+
+        :param gene_num: Input gene number
+        :param output_dim: Output cell type number
+        :param knowledge: Prior knowledge matrix, can be None
+        """
         super(BIND, self).__init__()
 
         self.DNN = nn.Sequential(
@@ -176,7 +182,7 @@ class BIND(nn.Module):
                 nn.ReLU()
             )
 
-        # 最终融合层
+        # final output layer
         self.fc_expr = nn.Linear(32, output_dim)
         self.fc_comb = nn.Linear(32 * 2, output_dim)
 
@@ -191,4 +197,4 @@ class BIND(nn.Module):
             dnn_output = self.DNN(gene_expression)
             output = self.fc_expr(dnn_output)
 
-        return F.softmax(output, dim=1)
+        return output

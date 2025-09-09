@@ -1,3 +1,12 @@
+# -*- coding: UTF-8 -*-
+"""
+@Project: BIND
+@File   : train.py
+@IDE    : PyCharm
+@Author : hjguo
+@Date   : 2025/7/9 11:37
+@Doc    : Simulate pseudo-bulk data from single-cell data
+"""
 import anndata
 import numpy as np
 import pandas as pd
@@ -159,7 +168,6 @@ def simulation(
         print(f"Saved simulated data to {output_path}")
 
     return simulated_data
-
 
 
 if __name__ == '__main__':
