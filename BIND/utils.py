@@ -20,11 +20,12 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
-def load_data(data_name=None):
+def load_data(data_name=None, variance_threshold=0.99):
     """
     Load training and testing data based on the specified dataset name.
 
     :param data_name: Name of the dataset to be loaded.
+    :param variance_threshold: Variance threshold for gene filtering.
     :return: Training and testing data in AnnData format.
     """
     if data_name == 'brain_human' or data_name == 'brain_human_541':
@@ -70,7 +71,7 @@ def load_data(data_name=None):
     train_x = train_x.loc[:, (train_x != 0).any(axis=0)]
     test_x = test_x.loc[:, (test_x != 0).any(axis=0)]
     # variance_threshold = 0.99999
-    variance_threshold = 0.99
+    variance_threshold = variance_threshold
     var_cutoff = train_x.var(axis=0).sort_values(ascending=False)[
         int(train_x.shape[
                 1] * variance_threshold)]  # Calculate variance for each gene, sort from high to low, find genes ranked in the top variance_threshold
@@ -108,12 +109,13 @@ def load_data(data_name=None):
     return train_data, test_data
 
 
-def load_data_from_path(train_path, test_path):
+def load_data_from_path(train_path, test_path, variance_threshold=0.99):
     """
     Load training and testing data from specified file paths.
 
     :param train_path: Path to the training data file (.h5ad format).
     :param test_path: Path to the testing data file (.h5ad, .csv, or .txt format).
+    :param variance_threshold: Variance threshold for gene filtering.
     :return: Training and testing data in AnnData format.
     """
     if train_path.endswith('.h5ad'):
@@ -144,7 +146,7 @@ def load_data_from_path(train_path, test_path):
     train_x = train_x.loc[:, (train_x != 0).any(axis=0)]
     test_x = test_x.loc[:, (test_x != 0).any(axis=0)]
     # variance_threshold = 0.99999
-    variance_threshold = 0.99
+    variance_threshold = variance_threshold
     var_cutoff = train_x.var(axis=0).sort_values(ascending=False)[
         int(train_x.shape[
                 1] * variance_threshold)]  # Calculate variance for each gene, sort from high to low, find genes ranked in the top variance_threshold
