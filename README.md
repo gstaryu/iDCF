@@ -97,6 +97,8 @@ run_epochs: The number of rounds to run training and testing, defaults to 3. The
 is_knowledge: Whether to incorporate prior biological knowledge into the model, defaults to True.
 ```
 
+If you want to use your own simulated or real data, you can change `load_data` in main.py to `load_data_from_path(train_path, test_path, variance_threshold=0.99)`, which can directly read data from file paths.
+
 ### 4. Interpret the Model with SHAP
 
 If you want to get interpretability results while performing deconvolution, you can use the `main_interpretability.py` script, which includes all the functionalities of `main.py` and adds interpretability features.

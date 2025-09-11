@@ -12,7 +12,7 @@ import torch
 import numpy as np
 import pandas as pd
 import random
-from BIND.utils import load_data, load_knowledge
+from BIND.utils import load_data, load_data_from_path, load_knowledge
 from BIND.train import train, prediction
 from BIND.shap_utils import (
     explain_expression_genes,

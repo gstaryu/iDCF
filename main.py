@@ -10,7 +10,7 @@
 import os
 import torch
 import pandas as pd
-from BIND.utils import load_data, load_knowledge
+from BIND.utils import load_data, load_data_from_path, load_knowledge
 from BIND.train import train, prediction
 
 
