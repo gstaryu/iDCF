@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-@Project: BIND
+@Project: iDCF
 @File   : shap_utils.py
 @IDE    : PyCharm
 @Author : hjguo
@@ -18,7 +18,7 @@ def explain_expression_genes(model, data_tensor, feature_names, cell_types, save
     """
     Analyze the contribution of each gene when only gene expression data is input.
 
-    :param model: The trained BIND model.
+    :param model: The trained iDCF model.
     :param data_tensor: Input gene expression data as a tensor.
     :param feature_names: List of gene names corresponding to the features in data_tensor.
     :param cell_types: List of cell type names corresponding to the output classes of the model.
@@ -61,7 +61,7 @@ def explain_knowledge_genes(model, data_tensor, feature_names, cell_types, save_
     """
     Analyze the contribution of each gene when incorporating prior knowledge (PPI/Pathways).
 
-    :param model: The trained BIND model.
+    :param model: The trained iDCF model.
     :param data_tensor: Input gene expression data as a tensor.
     :param feature_names: List of gene names corresponding to the features in data_tensor.
     :param cell_types: List of cell type names corresponding to the output classes of the model.
@@ -104,7 +104,7 @@ def explain_branch_contributions(model, data_tensor, save_path):
     """
     Analyze the contributions of the knowledge branch and gene expression data branch.
 
-    :param model: The trained BIND model.
+    :param model: The trained iDCF model.
     :param data_tensor: Input gene expression data as a tensor.
     :param save_path: Directory to save the SHAP plots and values.
     :return: SHAP values array.
@@ -167,7 +167,7 @@ def explain_knowledge_features(model, data_tensor, knowledge_feature_names, save
     """
     Analyze the contribution of knowledge items (PPI/Pathways).
 
-    :param model: The trained BIND model.
+    :param model: The trained iDCF model.
     :param data_tensor: Input gene expression data as a tensor.
     :param knowledge_feature_names: List of knowledge feature names corresponding to the knowledge items.
     :param save_path: Directory to save the SHAP plots and values.

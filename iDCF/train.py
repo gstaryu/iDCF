@@ -1,18 +1,18 @@
 # -*- coding: UTF-8 -*-
 """
-@Project: BIND
+@Project: iDCF
 @File   : train.py
 @IDE    : PyCharm
 @Author : hjguo
 @Date   : 2025/7/9 11:37
-@Doc    : Train the BIND model
+@Doc    : Train the iDCF model
 """
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
 import pandas as pd
 from tqdm import tqdm
-from .model import BIND
+from .model import iDCF
 
 from torch.utils.data import DataLoader
 
@@ -31,7 +31,7 @@ class Dataset:
 
 def train(train_data, batch_size, lr, epochs, device, knowledge=None):
     """
-    Train the BIND model.
+    Train the iDCF model.
 
     :param train_data: Training data in AnnData format.
     :param batch_size: Batch size for training.
@@ -47,7 +47,7 @@ def train(train_data, batch_size, lr, epochs, device, knowledge=None):
     if knowledge is not None:
         knowledge = torch.tensor(knowledge)
     is_knowledge = True if knowledge is not None else False
-    model = BIND(gene_num=train_data.X.shape[1], output_dim=train_data.obs.shape[1], knowledge=knowledge).to(device)
+    model = iDCF(gene_num=train_data.X.shape[1], output_dim=train_data.obs.shape[1], knowledge=knowledge).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     model.train()
     loss = []
@@ -70,9 +70,9 @@ def train(train_data, batch_size, lr, epochs, device, knowledge=None):
 
 def prediction(model, test_data, device, knowledge=None):
     """
-    Predict cell type fractions using the trained BIND model.
+    Predict cell type fractions using the trained iDCF model.
 
-    :param model: Trained BIND model.
+    :param model: Trained iDCF model.
     :param test_data: Test data in AnnData format.
     :param device: Device to run the prediction on.
     :param knowledge:

@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-@Project: BIND
+@Project: iDCF
 @File   : main.py
 @IDE    : PyCharm
 @Author : hjguo
@@ -10,13 +10,13 @@
 import os
 import torch
 import pandas as pd
-from BIND.utils import load_data, load_data_from_path, load_knowledge
-from BIND.train import train, prediction
+from iDCF.utils import load_data, load_data_from_path, load_knowledge
+from iDCF.train import train, prediction
 
 
 def main(data_name=None, run_epochs=3, is_knowledge=True):
     """
-    Main function to train and predict using the BIND model.
+    Main function to train and predict using the iDCF model.
 
     :param data_name: Name of the dataset to be used.
     :param run_epochs: Number of times to run the training and prediction process.

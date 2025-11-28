@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-@Project: BIND
+@Project: iDCF
 @File   : main.py
 @IDE    : PyCharm
 @Author : hjguo
@@ -12,9 +12,9 @@ import torch
 import numpy as np
 import pandas as pd
 import random
-from BIND.utils import load_data, load_data_from_path, load_knowledge
-from BIND.train import train, prediction
-from BIND.shap_utils import (
+from iDCF.utils import load_data, load_data_from_path, load_knowledge
+from iDCF.train import train, prediction
+from iDCF.shap_utils import (
     explain_expression_genes,
     explain_knowledge_genes,
     explain_branch_contributions,
@@ -24,7 +24,7 @@ from BIND.shap_utils import (
 
 def main(data_name=None, run_epochs=3, is_knowledge=True, interpretability=False):
     """
-    Main function to train and predict using the BIND model, with optional interpretability analysis.
+    Main function to train and predict using the iDCF model, with optional interpretability analysis.
 
     :param data_name: Name of the dataset to be used.
     :param run_epochs: Number of times to run the training and prediction process.

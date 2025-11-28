@@ -1,11 +1,11 @@
 # -*- coding: UTF-8 -*-
 """
-@Project: BIND
+@Project: iDCF
 @File   : model.py
 @IDE    : PyCharm
 @Author : hjguo
 @Date   : 2025/7/9 11:36
-@Doc    : BIND model code, CustomizedLinear comes from:: https://github.com/uchida-takumi/CustomizedLinear/tree/master
+@Doc    : iDCF model code, CustomizedLinear comes from:: https://github.com/uchida-takumi/CustomizedLinear/tree/master
 """
 import torch
 import torch.nn as nn
@@ -124,16 +124,16 @@ class CustomizedLinear(nn.Module):
         )
 
 
-class BIND(nn.Module):
+class iDCF(nn.Module):
     def __init__(self, gene_num, output_dim, knowledge=None):
         """
-        BIND model
+        iDCF model
 
         :param gene_num: Input gene number
         :param output_dim: Output cell type number
         :param knowledge: Prior knowledge matrix, can be None
         """
-        super(BIND, self).__init__()
+        super(iDCF, self).__init__()
 
         self.DNN = nn.Sequential(
             nn.Linear(gene_num, 512),

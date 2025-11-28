@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 """
-@Project: BIND
+@Project: iDCF
 @File   : train.py
 @IDE    : PyCharm
 @Author : hjguo
