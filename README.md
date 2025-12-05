@@ -5,12 +5,13 @@
 This repository contains the source code for the iDCF paper.
 
 ![](./model.png)
-*The iDCF framework workflow.
+**The iDCF framework workflow.**
         (a) Construction of the pseudo-bulk training cohort. ScRNA-seq data serves as the source for generating pseudo-bulk samples through a randomized in silico cell sampling strategy. These simulated mixtures are assigned ground truth cell-type proportions to supervise model training.
         (b) The dual-stream neural network architecture. The model integrates transcriptomic data with biological priors through two parallel streams:
         (1) Data-driven stream (DNN): Processes bulk expression vectors through fully connected layers to extract high-dimensional latent features.
-        (2) Knowledge-driven stream (KSNN): Utilizes a "knowledge mask" to impose structural constraints on a sparse neural network. Connections between the ``gene layer" and ``knowledge layer" are strictly limited to biologically established interactions (e.g., gene-pathway or PPI associations), filtering out spurious correlations.
-        Deep features from both streams are concatenated and passed through a fusion layer and softmax classifier to minimize the loss against ground truth. The ``SHAP interpretability module" visualizes the model's logic by computing Shapley values for individual genes and knowledge nodes, revealing the biological basis of the predictions.
+        (2) Knowledge-driven stream (KSNN): Utilizes a "knowledge mask" to impose structural constraints on a sparse neural network. Connections between the "gene layer" and "knowledge layer" are strictly limited to biologically established interactions (e.g., gene-pathway or PPI associations), filtering out spurious correlations.
+        Deep features from both streams are concatenated and passed through a fusion layer and softmax classifier to minimize the loss against ground truth. 
+        The "SHAP interpretability module" dissects the model's decision logic at two distinct levels to reveal the biological basis of predictions: (i) Gene-level attribution: Computes directional SHAP values for individual gene inputs relative to the model's final output layer. This reveals whether specific gene expression levels exert a positive or negative influence on the estimation of a given cell type. (ii) Knowledge-level prioritization: Interrogates the knowledge feature vector output by the KSNN stream. By quantifying the mean absolute SHAP value of these intermediate features, this metric ranks biological modules based on their overall magnitude of influence on the decision-making process.
 ## Installation Guide
 
 ### Prerequisites
