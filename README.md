@@ -4,7 +4,7 @@
 
 This repository contains the source code for the iDCF paper.
 
-![](./model.tif)
+![](./model.png)
 **Workflow and architecture of the iDCF framework for interpretable cell deconvolution.**
         (A) Construction of the pseudo-bulk training cohort. ScRNA-seq data serves as the source for generating pseudo-bulk samples through a randomized in silico cell sampling strategy. These simulated mixtures are assigned ground truth cell-type proportions to supervise model training.
         (B) The dual-stream neural network architecture. The model integrates transcriptomic data with biological priors through two parallel streams:
