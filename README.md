@@ -154,6 +154,15 @@ The analysis results can be visualized and further explored using the Jupyter no
 └── README.md                 # This file
 ```
 
+## Source Data for Figures
+
+Most of the source data for the figures in this paper are available via the journal's Source Data repository. However, due to file size limitations, the raw data for **Fig. 4** and **Supplementary Figs. 3 & 4** are hosted externally on Google Drive.
+
+- **Fig. 4** → `monaco.zip`
+- **Supplementary Figs. 3 & 4** → `CRC-sEV.zip`
+
+**Download link:** [Google Drive Folder](https://drive.google.com/drive/folders/1x68GwdMenFtigrRB8yoSfvxovhcRAViT?usp=sharing)
+
 ## Citation
 
 If you use iDCF in your research, please cite our paper:
