@@ -5,13 +5,20 @@
 This repository contains the source code for the iDCF paper.
 
 ![](./model.png)
-**The iDCF framework workflow.**
-        (a) Construction of the pseudo-bulk training cohort. ScRNA-seq data serves as the source for generating pseudo-bulk samples through a randomized in silico cell sampling strategy. These simulated mixtures are assigned ground truth cell-type proportions to supervise model training.
-        (b) The dual-stream neural network architecture. The model integrates transcriptomic data with biological priors through two parallel streams:
+**Workflow and architecture of the iDCF framework for interpretable cell deconvolution.**
+        (A) Construction of the pseudo-bulk training cohort. ScRNA-seq data serves as the source for generating pseudo-bulk samples through a randomized in silico cell sampling strategy. These simulated mixtures are assigned ground truth cell-type proportions to supervise model training.
+        (B) The dual-stream neural network architecture. The model integrates transcriptomic data with biological priors through two parallel streams:
         (1) Data-driven stream (DNN): Processes bulk expression vectors through fully connected layers to extract high-dimensional latent features.
-        (2) Knowledge-driven stream (KSNN): Utilizes a "knowledge mask" to impose structural constraints on a sparse neural network. Connections between the "gene layer" and "knowledge layer" are strictly limited to biologically established interactions (e.g., gene-pathway or PPI associations), filtering out spurious correlations.
+        (2) Knowledge-driven stream (KSNN): Utilizes a "knowledge mask" to impose structural constraints on a sparse neural network. 
+        Let $N$ denote the number of input genes and $M$ the number of knowledge features (pathways and PPI nodes). 
+        The knowledge mask is an $N \times M$ matrix.
+        Connections between the "gene layer" and "knowledge layer" (where $G$ and $K$ denote gene and knowledge features, respectively) are strictly limited to biologically established interactions (e.g., gene-pathway or PPI associations), filtering out spurious correlations. 
+        The PPI network (from STRING) and pathway annotations (from MSigDB) are provided as integrated, built-in resources within the iDCF framework and do not need to be supplied by the user.
         Deep features from both streams are concatenated and passed through a fusion layer and softmax classifier to minimize the loss against ground truth. 
-        The "SHAP interpretability module" dissects the model's decision logic at two distinct levels to reveal the biological basis of predictions: (i) Gene-level attribution: Computes directional SHAP values for individual gene inputs relative to the model's final output layer. This reveals whether specific gene expression levels exert a positive or negative influence on the estimation of a given cell type. (ii) Knowledge-level prioritization: Interrogates the knowledge feature vector output by the KSNN stream. By quantifying the mean absolute SHAP value of these intermediate features, this metric ranks biological modules based on their overall magnitude of influence on the decision-making process.
+        The ``SHAP interpretability module" dissects the model's decision logic at two distinct levels to reveal the biological basis of predictions: 
+        (i) Gene-level attribution (Right panel): Computes directional SHAP values for individual gene inputs relative to the model's final output layer. This reveals whether specific gene expression levels exert a positive or negative influence on the estimation of a given cell type. 
+        (ii) Knowledge-level attribution (Left panel): Interrogates the knowledge feature vector output by the KSNN stream. 
+        By computing directional SHAP values for these intermediate features, this analysis ranks biological modules based on their influence on the predicted cell-type proportions, revealing whether each module exerts a positive or negative effect. 
 ## Installation Guide
 
 ### Prerequisites
