@@ -15,10 +15,10 @@ This repository contains the source code for the iDCF paper.
         Connections between the "gene layer" and "knowledge layer" (where $G$ and $K$ denote gene and knowledge features, respectively) are strictly limited to biologically established interactions (e.g., gene-pathway or PPI associations), filtering out spurious correlations. 
         The PPI network (from STRING) and pathway annotations (from MSigDB) are provided as integrated, built-in resources within the iDCF framework and do not need to be supplied by the user.
         Deep features from both streams are concatenated and passed through a fusion layer and softmax classifier to minimize the loss against ground truth. 
-        The ``SHAP interpretability module" dissects the model's decision logic at two distinct levels to reveal the biological basis of predictions: 
-        (i) Gene-level attribution (Right panel): Computes directional SHAP values for individual gene inputs relative to the model's final output layer. This reveals whether specific gene expression levels exert a positive or negative influence on the estimation of a given cell type. 
-        (ii) Knowledge-level attribution (Left panel): Interrogates the knowledge feature vector output by the KSNN stream. 
+        The "SHAP interpretability module" dissects the model's decision logic at two distinct levels to reveal the biological basis of predictions: 
+        Knowledge-level attribution (Left panel): Interrogates the knowledge feature vector output by the KSNN stream. 
         By computing directional SHAP values for these intermediate features, this analysis ranks biological modules based on their influence on the predicted cell-type proportions, revealing whether each module exerts a positive or negative effect. 
+        Gene-level attribution (Right panel): Computes directional SHAP values for individual gene inputs relative to the model's final output layer. This reveals whether specific gene expression levels exert a positive or negative influence on the estimation of a given cell type.
 ## Installation Guide
 
 ### Prerequisites
@@ -174,10 +174,22 @@ Most of the source data for the figures in this paper are available via the jour
 
 If you use iDCF in your research, please cite our paper:
 
-```
-[Citation information will be added here once the paper is published]
+```bibtex
+@article{10.1371/journal.pcbi.1014727,
+    doi = {10.1371/journal.pcbi.1014727},
+    author = {Guo, Hongjiang AND Wu, Tingfang AND Wang, Wenzheng AND Jiang, Yelu AND Li, Geng AND Nie, Liangpeng AND Jia, Yunhua AND Quan, Lijun AND Huang, Moli AND Lyu, Qiang},
+    journal = {PLOS Computational Biology},
+    publisher = {Public Library of Science},
+    title = {iDCF: Interpretable deconvolution of cell fractions via biologically-informed deep learning using scRNA-seq data},
+    year = {2026},
+    month = {08},
+    volume = {22},
+    url = {https://doi.org/10.1371/journal.pcbi.1014727},
+    pages = {1-27},
+    number = {8},
+}
 ```
 
 ## License
 
-This project is licensed under the MIT License. See the `LICENSE` file for details.
+This project is licensed under the Apache-2.0 License. See the `LICENSE` file for details.
